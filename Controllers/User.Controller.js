@@ -60,6 +60,5 @@ function doRegister(req, res, next) {
         console.log(result)
     })
 
-    console.log(values)
     next()
 }
