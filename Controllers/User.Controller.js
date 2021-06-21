@@ -30,35 +30,54 @@ function doLogin(req, res, next) {
     next()
 }
 
-function doRegister(req, res, next) {
+async function doRegister(req, res, next) {
 
     const body = req.body;
     const username = body.username;
     const password = body.password;
     const email = body.email;
 
-    if(!username)
+    if (!username)
         return res.status(400).send({
             message: 'Please enter a username'
         })
 
-    if(!password)
+    if (!password)
         return res.status(400).send({
             message: 'Please enter a password'
         })
 
-    if(!email)
+    if (!email)
         return res.status(400).send({
             message: 'Please enter an email'
         })
 
+    if(await findOne(['username', username]))
+        return res.status(400).send({
+            message: 'Username already exists.'
+        })
+
+    if(await findOne(['email', email]))
+        return res.status(400).send({
+            message: 'That email is already registered.'
+        })
+
     let values = [username, password, email]
     connect.query('insert into users values (null, ?, ?, ?)', values, (error, result) => {
-        if(error)
+        if (error)
             throw error;
-
-        console.log(result)
     })
 
     next()
+}
+
+const findOne = (params) => {
+    return new Promise((resolve) => {
+        connect.query(`select * from users where ${params[0]} = '${params[1]}'`, (error, result) => {
+            if (error)
+                throw error;
+
+            resolve(result.length > 0)
+        })
+    })
 }
